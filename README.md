@@ -11,8 +11,6 @@ Binary Format, also known as Wasm. The Abstract Binary Interface (ABI) is the
 contract between the *host* and the *guest*, primarily defining functions each
 side can import.
 
-In con
-
 Let's take an example of a program that embeds an HTTP processor. This processor
 has a chain of middleware that allows it to customize or change requests and
 responses. Middleware in Wasm can be included in this chain.
