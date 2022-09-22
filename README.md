@@ -59,7 +59,7 @@ of Wasm middleware are free to swap out implementations decoupled from any
 changes to the binary. WebAssembly is a sand-boxed architecture, so the host
 process can safely run code defined externally.
 
-## Application Binary Interface (ABI) {#abi}
+## Application Binary Interface (ABI)
 
 The HTTP middleware ABI is not yet defined, but will be after practice. Follow
 this repository for updates.
