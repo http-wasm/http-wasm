@@ -73,8 +73,8 @@ characters.
 ### Host ABI
 
 The [host ABI](./http-host.md) defines the functions that the host makes available to
-middleware. Frameworks adding support for http-wasm middleware must expose the
-functions defined in the ABI to loaded Wasm binaries for them to function.
+middleware. Frameworks adding support for http-wasm middleware must export the
+functions defined in the ABI to guest Wasm binaries for them to function.
 
 [1]: https://webassembly.org/
 [2]: https://wazero.io
