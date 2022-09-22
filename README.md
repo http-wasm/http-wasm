@@ -50,8 +50,8 @@ The Wasm Middleware *host* is written in native code, and compiled into the
 application. For example, this code could use [wazero][2] as the WebAssembly
 runtime, if the host was written in Go, or [V8][3], if C++.
 
-The Wasm Middleware *guest* can be written in any language that supports the
-ABI in use by the *host*. For example, the middleware could be programmed in C
+The Wasm Middleware *guest* can be written in any language that can be compiled
+to Wasm. For example, the middleware could be programmed in C
 (ex. [Rust][4]) or Go (ex. [TinyGo][5]).
 
 While native middleware often require rebuilding the program from source, users
