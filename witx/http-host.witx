@@ -1,0 +1,12 @@
+;; HTTP host ABI
+;;
+;; The HTTP host ABI defines functions available to HTTP middleware to interact
+;; with the host process.
+
+(module $http
+  ;;; Log a message to the host's logs.
+  (@interface func (export "log")
+    ;;; The message to log, as a UTF-8 encoded string.
+    (param $msg string)
+  )
+)

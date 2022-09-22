@@ -61,8 +61,20 @@ process can safely run code defined externally.
 
 ## Application Binary Interface (ABI)
 
-The HTTP middleware ABI is not yet defined, but will be after practice. Follow
-this repository for updates.
+The HTTP middleware ABI is currently being defined. Follow this repository for updates.
+
+### Common notes
+
+- Parameters of type `string` expand to two parameters of type `u32`, the first being
+the pointer to the contents of the string and the second being the number of bytes.
+Note that for unicode strings, the number of bytes is larger than the number of
+characters.
+
+### Host ABI
+
+The [host ABI](./http-host.md) defines the functions that the host makes available to
+middleware. Frameworks adding support for http-wasm middleware must export the
+functions defined in the ABI to guest Wasm binaries for them to function.
 
 [1]: https://webassembly.org/
 [2]: https://wazero.io
