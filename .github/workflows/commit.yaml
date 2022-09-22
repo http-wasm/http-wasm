@@ -19,6 +19,9 @@ on:
   # See https://docs.github.com/en/free-pro-team@latest/actions/managing-workflow-runs/manually-running-a-workflow
   workflow_dispatch:
 
+env:
+  WITX_CLI_VERSION: 0.9.1
+
 jobs:
   check:
     name: Pre-commit check
@@ -28,13 +31,22 @@ jobs:
       - uses: actions/checkout@v3
 
       # No precompiled binaries for witx so we build from crate
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-witx-${{ env.WITX_CLI_VERSION }}
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
       - uses: actions-rs/cargo@v1
         with:
           command: install
-          args: witx-cli
+          args: --version ${{ env.WITX_CLI_VERSION }} witx-cli
 
       - name: Generate markdown
         run: witx docs -o http-host.md witx/http-host.witx
