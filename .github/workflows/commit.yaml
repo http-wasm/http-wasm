@@ -36,4 +36,8 @@ jobs:
           command: install
           args: witx-cli
 
-      - run: witx docs -o http-host.md witx/http-host.witx
+      - name: Generate markdown
+        run: witx docs -o http-host.md witx/http-host.witx
+
+      - name: Check no diffs from generation
+        run: test -z "$(git status --porcelain)" || (echo "Uncommited files detected, regenerate and commit docs." && exit 1)
