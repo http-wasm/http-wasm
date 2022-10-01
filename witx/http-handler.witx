@@ -1,9 +1,9 @@
-;; HTTP host ABI
+;; HTTP handler ABI
 ;;
-;; The HTTP host ABI defines functions available to HTTP middleware to interact
-;; with the host process.
+;; The HTTP handler ABI defines functions invoked on an HTTP server handling
+;; a client request.
 
-(module $http
+(module $http-handler
   ;;; Log a message to the host's logs.
   (@interface func (export "log")
     ;;; The message to log, as a UTF-8 encoded string.

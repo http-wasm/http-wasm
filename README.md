@@ -16,16 +16,12 @@ updates.
   the number of bytes. *Note* that for unicode strings, the number of bytes is
   larger than the number of characters.
 
-### Host ABI
+### Handler ABI
 
-The [host ABI](./http-host.md) defines the functions that the host makes
-available to middleware. Frameworks adding support for http-wasm middleware
+The [handler ABI](./http-handler.md) defines the functions that the host makes
+available to middleware. Frameworks adding support for http-handler middleware
 must export the functions defined in the ABI to guest Wasm binaries for them
-to function.
-
-### Guest ABI
-
-The guest must to minimally export its memory as "memory".
+to function. Meanwhile, guests must to minimally export its memory as "memory".
 
 [1]: https://github.com/http-wasm
 [2]: https://webassembly.org/
