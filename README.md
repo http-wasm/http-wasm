@@ -21,7 +21,7 @@ updates.
 The [handler ABI](./http-handler.md) defines the functions that the host makes
 available to middleware. Frameworks adding support for http-handler middleware
 must export the functions defined in the ABI to guest Wasm binaries for them
-to function. Meanwhile, guests must to minimally export its memory as "memory".
+to function. Meanwhile, guests must minimally export memory as "memory".
 
 [1]: https://github.com/http-wasm
 [2]: https://webassembly.org/
