@@ -48,7 +48,7 @@ jobs:
           args: --version ${{ env.WITX_CLI_VERSION }} witx-cli
 
       - name: Generate markdown
-        run: witx docs -o http-host.md witx/http-host.witx
+        run: witx docs -o http-handler.md witx/http-handler.witx
 
       - name: Check no diffs from generation
         run: test -z "$(git status --porcelain)" || (echo "Uncommited files detected, regenerate and commit docs." && exit 1)

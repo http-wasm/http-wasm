@@ -1,6 +1,6 @@
 # Types
 # Modules
-## <a href="#http" name="http"></a> http
+## <a href="#http-handler" name="http-handler"></a> http-handler
 ### Imports
 ### Functions
 

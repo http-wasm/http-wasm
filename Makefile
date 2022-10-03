@@ -1,3 +1,3 @@
 .PHONY: docs
 docs:
-	@witx docs -o http-host.md witx/http-host.witx
+	@witx docs -o http-handler.md witx/http-handler.witx
