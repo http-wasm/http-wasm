@@ -12,6 +12,7 @@ The http-handler guest is wasm that takes action on an incoming server request.
 For example, `handle` could add a header or perform an authorization check.
 
 ### `handle`
+
 "handle" is the entrypoint guest export called by the host when processing a
 request. Its signature is nullary, with neither parameters nor results.
 
