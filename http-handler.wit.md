@@ -51,12 +51,12 @@ log: func(
 ) -> ()
 ```
 
-For example, if parameters are message=8, message-len=2, this function
-would log the message "error".
+For example, if parameters are message=1, message-len=5, this function would
+log the message "error".
 ```
-	              message-len
-	           +--------------+
-	           |              |
-	[]byte{?, 'e', 'r', 'o', 'r', ?}
+                   message-len
+               +------------------+
+               |                  |
+    []byte{?, 'e', 'r', r', 'o', 'r', ?}
      message --^
 ```
