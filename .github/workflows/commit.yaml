@@ -29,26 +29,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-
-      # No precompiled binaries for witx so we build from crate
-      - uses: actions/cache@v3
+      - uses: WebAssembly/wit-abi-up-to-date@v6
         with:
-          path: |
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/
-          key: ${{ runner.os }}-cargo-witx-${{ env.WITX_CLI_VERSION }}
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-      - uses: actions-rs/cargo@v1
-        with:
-          command: install
-          args: --version ${{ env.WITX_CLI_VERSION }} witx-cli
-
-      - name: Generate markdown
-        run: witx docs -o http-handler.md witx/http-handler.witx
-
-      - name: Check no diffs from generation
-        run: test -z "$(git status --porcelain)" || (echo "Uncommitted files detected, regenerate and commit docs." && exit 1)
+          wit-abi-tag: wit-abi-0.5.0
