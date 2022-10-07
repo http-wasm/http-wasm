@@ -124,7 +124,7 @@ get-request-header: func(
 ) -> maybe-len
 ```
 
-For example, if parameters name=1 and name_len=4, this function would read the
+For example, if parameters name=1 and name-len=4, this function would read the
 header name "ETag".
 
 ```
@@ -211,3 +211,70 @@ set the path to "/a".
 []byte{?, '/', 'a', ?}
     path --^
 ```
+
+### `next`
+
+```wit
+/// calls a downstream handler and blocks until it is finished processing the
+/// response. This is an alternative to `send_response`.
+///
+/// Note: A host who fails to dispatch to or invoke the next handler will trap
+/// (aka panic, "unreachable" instruction).
+next: func()
+```
+
+### `set-response-header`
+
+```wit
+/// Overwrites a response header with a given name to a value read from memory.
+///
+/// Note: A host who fails to set the response header will trap (aka panic,
+/// "unreachable" instruction).
+set-response-header: func(
+    /// The memory offset of the UTF-8 encoded header name.
+    name: u32,
+    /// The possibly zero length of the UTF-8 encoded header name, in bytes.
+    name-len: u32,
+    /// The memory offset of the UTF-8 encoded header value.
+    value: u32,
+    /// The possibly zero length of the UTF-8 encoded header value, in bytes.
+    value-len: u32,
+)
+```
+
+For example, if parameters are name=1, name-len=4, value=8, value-len=1,
+this function would set the response header "ETag: 1".
+
+```
+               name-len             value-len
+           +--------------+             +
+           |              |             |
+[]byte{?, 'E', 'T', 'a', 'g', ?, ?, ?, '1', ?}
+    name --^                            ^
+                                value --+
+```
+
+### `send-response`
+
+```wit
+/// sends the HTTP response with a given status code and optional body. This is
+/// an alternative to dispatching to the `next` handler.
+///
+/// Note: The "Content-Length" header is set to `body-len` when non-zero. If
+/// you need to set "Content-Length: 0", call `set-response-header` first.
+///
+/// Note: A host who fails to send the response will trap (aka panic,
+/// "unreachable" instruction).
+send-response: func(
+    /// The HTTP status code. Ex. 200
+    status-code: u32,
+    /// The memory offset of the response body.
+    body: u32,
+    /// The possibly zero length of the response body, in bytes.
+    body-len: u32,
+)
+```
+
+For example, if parameters are status_code=401, body=1, body-len=0, this
+function sends the HTTP status code 401 with neither a body nor a
+"Content-Length" header.
