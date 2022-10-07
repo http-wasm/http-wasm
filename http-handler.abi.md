@@ -4,7 +4,6 @@
 
   The possibly zero maximum length of a result value to write in bytes.
   If the actual value is larger than this, nothing is written to memory.
-  A function that accepts this parameter returns `maybe-len`.
 
 Size: 4, Alignment: 4
 
@@ -57,4 +56,38 @@ Size: 8, Alignment: 8
 ##### Results
 
 - [`maybe-len`](#maybe_len)
+
+----
+
+#### <a href="#get_path" name="get_path"></a> `get-path` 
+
+  writes the path to memory if it exists and isn't larger than `buf-limit`.
+  The result is length of the path in bytes.
+  
+  Note: The path does not include query parameters.
+  
+  Note: A host who fails to get the path will trap (aka panic, "unreachable"
+  instruction).
+##### Params
+
+- <a href="#get_path.buf" name="get_path.buf"></a> `buf`: `u32`
+- <a href="#get_path.buf_limit" name="get_path.buf_limit"></a> `buf-limit`: [`buf-limit`](#buf_limit)
+##### Results
+
+- `u32`
+
+----
+
+#### <a href="#set_path" name="set_path"></a> `set-path` 
+
+  Overwrites the request path with one read from memory.
+  
+  Note: The path does not include query parameters.
+  
+  Note: A host who fails to set the path will trap (aka panic, "unreachable"
+  instruction).
+##### Params
+
+- <a href="#set_path.path" name="set_path.path"></a> `path`: `u32`
+- <a href="#set_path.path_len" name="set_path.path_len"></a> `path-len`: `u32`
 

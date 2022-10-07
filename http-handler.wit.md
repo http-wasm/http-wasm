@@ -13,7 +13,6 @@ described below.
 ```wit
 /// The possibly zero maximum length of a result value to write in bytes.
 /// If the actual value is larger than this, nothing is written to memory.
-/// A function that accepts this parameter returns `maybe-len`.
 type buf-limit = u32
 ```
 
@@ -21,7 +20,7 @@ This parameter supports the most common case of retrieving a header value by
 name. However, there are some subtle use cases possible, particularly helpful
 for WebAssembly performance:
 
-- re-using a buffer for multiple header reads (`buf`).
+- re-using a buffer for reading header or path values (`buf`).
 - growing a buffer only when needed (retry with larger `buf-limit`).
 - avoiding copying invalidly large header values (`buf-limit`).
 - determining if a header exists without copying it (`buf-limit=0`).
@@ -115,11 +114,12 @@ get-request-header: func(
     name: u32,
     /// The length of the header name in bytes.
     name-len: u32,
-    /// The memory offset of the UTF-8 encoded header value, if a value exists
+    /// The memory offset to write the UTF-8 encoded header value, if it exists
     /// and is not larger than `buf-limit` bytes.
     buf: u32,
-    /// The possibly zero maximum length of the header value to write in bytes.
-    /// If the actual value is larger than this, nothing is written to memory.
+    /// The possibly zero maximum length of the UTF-8 encoded header value to
+    /// write, in bytes. If the actual value is larger than this, nothing is
+    /// written to memory.
     buf-limit: buf-limit,
 ) -> maybe-len
 ```
@@ -141,7 +141,7 @@ need to read memory.
 If the `buf-limit` parameter was 7, nothing would be written to memory. The
 caller would decide whether to retry the request with a higher limit.
 
-If parameters buf=16 and buf_limit=128, and there was a value "01234567", the
+If parameters buf=16 and buf-limit=128, and there was a value "01234567", the
 result would be `1<<32|8` and the value written like so:
 ```
                          u32(1<<32|8) == 8
@@ -149,4 +149,65 @@ result would be `1<<32|8` and the value written like so:
                 |                                  |
 []byte{ 0..15, '0', '1', '2', '3', '4', '5', '6', '7', ?, .. }
           buf --^
+```
+
+### `get-path`
+
+```wit
+/// writes the path to memory if it exists and isn't larger than `buf-limit`.
+/// The result is length of the path in bytes.
+///
+/// Note: The path does not include query parameters.
+///
+/// Note: A host who fails to get the path will trap (aka panic, "unreachable"
+/// instruction).
+get-path: func(
+    /// The memory offset to write the UTF-8 encoded path, if not larger than
+    /// `buf-limit` bytes.
+    buf: u32,
+    /// The possibly zero maximum length of the UTF-8 encoded path to write, in
+    /// bytes. If the actual value is larger than this, nothing is written to
+    /// memory.
+    buf-limit: buf-limit,
+) -> u32
+```
+
+For example, if parameters buf=16 and buf-limit=128, and the request
+line was "GET /foo?bar", "/foo" would be written to memory like below, and the
+`len` of the path would be returned:
+
+```
+                       len
+                +--------------+
+                |              |
+[]byte{ 0..15, '/', 'f', 'o', 'o', ?, .. }
+          buf --^
+```
+
+### `set-path`
+
+```wit
+/// Overwrites the request path with one read from memory.
+///
+/// Note: The path does not include query parameters.
+///
+/// Note: A host who fails to set the path will trap (aka panic, "unreachable"
+/// instruction).
+set-path: func(
+    /// The memory offset of the UTF-8 encoded path.
+    path: u32,
+    /// The possibly zero length of the UTF-8 encoded path, in bytes.
+    path-len: u32,
+)
+```
+
+For example, if parameters are path=8, path-len=2, this function would
+set the path to "/a".
+
+```
+          path-len
+           +----+
+           |    |
+[]byte{?, '/', 'a', ?}
+    path --^
 ```
