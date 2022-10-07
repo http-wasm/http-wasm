@@ -144,7 +144,7 @@ caller would decide whether to retry the request with a higher limit.
 If parameters buf=16 and buf_limit=128, and there was a value "01234567", the
 result would be `1<<32|8` and the value written like so:
 ```
-                         u32(maybe-len) == 8
+                         u32(1<<32|8) == 8
                 +----------------------------------+
                 |                                  |
 []byte{ 0..15, '0', '1', '2', '3', '4', '5', '6', '7', ?, .. }
