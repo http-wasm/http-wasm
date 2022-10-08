@@ -91,3 +91,46 @@ Size: 8, Alignment: 8
 - <a href="#set_path.path" name="set_path.path"></a> `path`: `u32`
 - <a href="#set_path.path_len" name="set_path.path_len"></a> `path-len`: `u32`
 
+----
+
+#### <a href="#next" name="next"></a> `next` 
+
+  calls a downstream handler and blocks until it is finished processing the
+  response. This is an alternative to `send_response`.
+  
+  Note: A host who fails to dispatch to or invoke the next handler will trap
+  (aka panic, "unreachable" instruction).
+
+----
+
+#### <a href="#set_response_header" name="set_response_header"></a> `set-response-header` 
+
+  Overwrites a response header with a given name to a value read from memory.
+  
+  Note: A host who fails to set the response header will trap (aka panic,
+  "unreachable" instruction).
+##### Params
+
+- <a href="#set_response_header.name" name="set_response_header.name"></a> `name`: `u32`
+- <a href="#set_response_header.name_len" name="set_response_header.name_len"></a> `name-len`: `u32`
+- <a href="#set_response_header.value" name="set_response_header.value"></a> `value`: `u32`
+- <a href="#set_response_header.value_len" name="set_response_header.value_len"></a> `value-len`: `u32`
+
+----
+
+#### <a href="#send_response" name="send_response"></a> `send-response` 
+
+  sends the HTTP response with a given status code and optional body. This is
+  an alternative to dispatching to the `next` handler.
+  
+  Note: The "Content-Length" header is set to `body-len` when non-zero. If
+  you need to set "Content-Length: 0", call `set-response-header` first.
+  
+  Note: A host who fails to send the response will trap (aka panic,
+  "unreachable" instruction).
+##### Params
+
+- <a href="#send_response.status_code" name="send_response.status_code"></a> `status-code`: `u32`
+- <a href="#send_response.body" name="send_response.body"></a> `body`: `u32`
+- <a href="#send_response.body_len" name="send_response.body_len"></a> `body-len`: `u32`
+
