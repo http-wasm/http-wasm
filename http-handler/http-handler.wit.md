@@ -1,10 +1,21 @@
 # HTTP handler ABI
 
-The "http-handler" ABI defines the functions that the host makes available to
-middleware. Frameworks adding support for http-handler middleware must export
-the functions defined in the ABI to guest Wasm binaries for them to function.
-Meanwhile, guests must minimally export memory as "memory". Further details are
-described below.
+The "http-handler" ABI allows users to write portable HTTP server middleware in
+a language that compiles to wasm. For example, a Go HTTP service could embed
+routing middleware written in Zig.
+
+The guest is the code compiled to wasm and the host is an HTTP server library
+that accepts middleware plugins, such as [net/http][1] in Go.
+
+The overall process is the host calls the "handle" function exported by the
+guest. This may use host functions it imports to inspect or manipulate request
+or response properties. The guest decides whether to construct a response, or
+defer to the next middleware.
+
+An example is routing middleware. In this case, the guest constructs an 302
+response instead of calling the next handler to redirect a path that moved to
+a new host. If the path is relative, it could alternatively choose to forward
+the request by resetting the path before calling the next handler.
 
 ## Types
 
@@ -278,3 +289,5 @@ send-response: func(
 For example, if parameters are status_code=401, body=1, body-len=0, this
 function sends the HTTP status code 401 with neither a body nor a
 "Content-Length" header.
+
+[1]: https://pkg.go.dev/net/http

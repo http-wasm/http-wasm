@@ -35,13 +35,13 @@ This specification only uses numeric types, defined in WebAssembly Core
 Specification 1.0. For example, a string is passed as two `u32` parameters
 corresponding to its segment in linear memory.
 
-## Handler ABI
+## http-handler
 
-The [handler ABI](./http-handler.wit.md) defines the functions that the host makes
-available to middleware. Frameworks adding support for http-handler middleware
-must export the functions defined in the ABI to guest Wasm binaries for them
-to function. Meanwhile, guests must minimally export memory as "memory".
+The [http-handler ABI][4] allows users to write portable HTTP server middleware
+in a language that compiles to wasm. For example, a Go HTTP service could embed
+routing middleware written in Zig.
 
 [1]: https://github.com/http-wasm
 [2]: https://webassembly.org/
 [3]: https://github.com/bytecodealliance/wit-bindgen
+[4]: http-handler/http-handler.wit.md
