@@ -53,7 +53,9 @@ in bytes the host can write.
 
 In order for the guest to control memory usage, it can pass any `buf-limit` to
 a function that reads a field. If it is sufficient, the result will be written
-to `buf` and the result will the length in bytes written.
+to `buf` and the result will be the length in bytes written. It is crucial to
+understand that if the field is larger than the `buf-limit`, nothing is
+written. This allows the guest to learn the length, by passing `buf-limit=0`.
 
 For example, given the below function:
 ```webassembly
@@ -66,9 +68,19 @@ A guest which uses a shared buffer can use its pre-allocated length as
 `buf_limit`. If the result is over that limit it can attempt to extend that
 limit (ex via `memory.grow`) and retry or trap/panic.
 
-A guest with a memory allocator can learn the length of the field by calling it
-with `buf_limit=0`. It can then allocate a string of the result length and
-retry. This is typical in garbage collected languages.
+```webassembly
+;; path_len = get_path(path, buf_limit)
+(local.set $path_len
+  (call $get_path (global.get $buf) (local.get $buf_limit)))
+
+;; if path_len > buf_limit { panic }
+(if (i32.gt_s (local.get $path_len) (local.get $buf_limit))
+  (then unreachable)) ;; out of memory
+```
+
+More routinely, guests are higher level languages that have garbage collection.
+A guest can learn the length of the field by calling it with `buf_limit=0`. It
+can then allocate a string of the exact length and retry.
 
 Ex.
 ```go
