@@ -42,6 +42,62 @@ This specification only uses numeric types, defined in WebAssembly Core
 Specification 1.0. For example, a string is passed as two `u32` parameters
 corresponding to its segment in linear memory.
 
+### Memory Allocation
+
+This specification relies completely on guest wasm to define how to manage
+memory, and does not require WASI or any other guest imports.
+
+All functions that read fields from the host accept two `u32` parameters:
+`buf` and `buf-limit`, representing the linear memory offset and maximum length
+in bytes the host can write.
+
+In order for the guest to control memory usage, it can pass any `buf-limit` to
+a function that reads a field. If it is sufficient, the result will be written
+to `buf` and the result will be the length in bytes written. It is crucial to
+understand that if the field is larger than the `buf-limit`, nothing is
+written. This allows the guest to learn the length, by passing `buf-limit=0`.
+
+For example, given the below function:
+```webassembly
+(import "http-handler" "get_path" (func $get_path
+  (param $buf i32) (param $buf_limit i32)
+  (result (; path_len ;) i32)))
+```
+
+A guest which uses a shared buffer can use its pre-allocated length as
+`buf_limit`. If the result is over that limit it can attempt to extend that
+limit (ex via `memory.grow`) and retry or trap/panic.
+
+```webassembly
+;; path_len = get_path(buf, buf_limit)
+(local.set $path_len
+  (call $get_path (global.get $buf) (local.get $buf_limit)))
+
+;; if path_len > buf_limit { panic }
+(if (i32.gt_s (local.get $path_len) (local.get $buf_limit))
+  (then unreachable)) ;; out of memory
+
+;; Now, the path is at mem[buf:path_len]!
+```
+
+More routinely, guests are higher level languages that have garbage collection.
+A guest can learn the length of the field by calling it with `buf_limit=0`. It
+can then allocate a string of the exact length and retry.
+
+Ex.
+```go
+func GetPath() string {
+    path_len := get_path(0, 0)
+    if path_len == 0 {
+		return ""
+    }
+    buf := make([]byte, path_len)
+    ptr := uintptr(unsafe.Pointer(&buf[0]))
+    _ = getPath(ptr, path_len)
+    return string(buf)
+}
+```
+
 [1]: https://github.com/http-wasm
 [2]: https://webassembly.org/
 [3]: http-handler/http-handler.wit.md
