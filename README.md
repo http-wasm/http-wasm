@@ -69,13 +69,15 @@ A guest which uses a shared buffer can use its pre-allocated length as
 limit (ex via `memory.grow`) and retry or trap/panic.
 
 ```webassembly
-;; path_len = get_path(path, buf_limit)
+;; path_len = get_path(buf, buf_limit)
 (local.set $path_len
   (call $get_path (global.get $buf) (local.get $buf_limit)))
 
 ;; if path_len > buf_limit { panic }
 (if (i32.gt_s (local.get $path_len) (local.get $buf_limit))
   (then unreachable)) ;; out of memory
+
+;; Now, the path is at mem[buf:path_len]!
 ```
 
 More routinely, guests are higher level languages that have garbage collection.
