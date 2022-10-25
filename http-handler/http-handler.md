@@ -469,7 +469,7 @@ If parameters buf=16 and buf_limit=128, and there were two values: "a=b" and
           buf --^
 ```
 
-### `set_header`
+### `set_header_value`
 
 ```webassembly
 ;; set_header_value overwrites all values of the given header name with the
@@ -495,7 +495,7 @@ value_len=1, this function would set the response header "ETag: 1".
                                 value --+
 ```
 
-### `add_header`
+### `add_header_value`
 
 ```webassembly
 ;; add_header_value adds a single value for the given header name.
