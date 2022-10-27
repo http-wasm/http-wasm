@@ -8,10 +8,12 @@ The guest is the code compiled to wasm and the host is an HTTP server library
 that accepts middleware plugins, such as [net/http][1] in Go. The host exports
 functions for accessing HTTP messages under the module name "http_handler".
 
-The overall process is the host calls the `handle` function exported by the
-guest. This may use host functions it imports to inspect or manipulate request
-or response properties. The guest decides whether to construct a response, or
-call `next`, to defer to the next middleware.
+The overall process is the host calls the `handle_request` function exported by
+the guest. This may use host functions it imports to inspect or manipulate
+request or response properties. The guest decides whether to construct a
+response, or return `next=1`, to proceed to the next handler on the host. If
+so, the host calls `handle_response` to allow the guest to inspect or
+manipulate the response.
 
 An example is routing middleware. In this case, the guest constructs an 302
 response instead of calling the next handler to redirect a path that moved to
@@ -21,40 +23,90 @@ the request by resetting the path before calling the next handler.
 ## Lifecycle Functions
 
 The HTTP handler guest is compiled and takes action on an incoming server
-request. Its only requirement is to export `memory` and a function `handle`
-which the host calls for each request. The guest logic might a header and pass
-control to the `next` handler on the host, or respond directly. All access to
-HTTP fields are via functions imported from the host.
+request. Its only requirement is to export `memory` and two functions:
 
-### `handle`
+* `handle_request`: called by the host on each request and returns `next=1` to
+  continue to the next handler on the host.
+* `handle_response`: caller by the host, regardless of error, when
+  `handle_request` returned `next=1`.
+
+For example, the guest logic might add a header in `handle_request` and proceed
+to the next handler by returning `next=1`. Or it may decide to write its own
+response and `next=0` to skip any next handlers on the host.
+
+Note: All access to HTTP fields are via functions imported from the host.
+
+### `ctx_next`
+
+`ctx_next` is the result of `handle_request`. For compatability with
+WebAssembly Core Specification 1.0, two i32 values are combined into a single
+i64 in the following order:
+
+* ctx: opaque 32-bits the guest defines and the host propagates to
+  `handle_response`. A typical use is correlation of request state.
+* next: one to proceed to the next handler on the host. zero to skip any next
+  handler. Guests skip when they wrote a response or decided not to.
+
+When the guest decides to proceed to the next handler, it can return
+`ctx_next=1` which is the same as `next=1` without any request context. If it
+wants the host to propagate request context, it shifts that into the upper
+32-bits of `ctx_next` like below.
 
 ```webassembly
-;; handle is the entrypoint defined and exported by the guest. The host calls
-;; this for each request.
-;;
-;; Note: A host who fails to dispatch to or invoke the next handler will trap
-;; (aka panic, "unreachable" instruction).
-(func $handle (export "handle")
-  (call $next)) ;; example implementation which simply calls next.
+(func (export "handle_request") (result (; ctx_next ;) i64)
+  ;; --snip--
+  ;; return i64(reqCtx) << 32 | i64(1)
+  (return
+    (i64.or
+      (i64.shl (i64.extend_i32_u (local.get $reqCtx)) (i64.const 32))
+      (i64.const 1))))
 ```
 
-`handle` may dispatch to the `next` handler or construct a response in wasm. If
-neither occur, hosts default to an empty HTTP 200 response. That said, a default
-guest should call `next`.
+Here are some examples of `ctx_next` values:
+* `0<<32|0`  (0): don't proceed to the next handler.
+* `0<<32|1`  (1): proceed to the next handler without context state.
+* `16<<32|1` (68719476737): proceed to the next handler and call
+  `handle_response` with 16.
+* `16<<32|16` (68719476736): the value 16 is ignored because
+  `handle_response` won't be called.
 
-### `next`
+### `handle_request`
 
 ```webassembly
-;; next calls a downstream handler and blocks until it is finished processing.
+;; handle_request is the entrypoint defined and exported by the guest. The host
+;; calls this for each request.
 ;;
-;; Note: A host who fails to dispatch to or invoke the next handler will trap
-;; (aka panic, "unreachable" instruction).
-(import "http_handler" "next" (func $next))
+;; The lower 32-bits of the `ctx_next` result ("next") can be zero or one:
+;; one means proceed to the next handler on the host and zero means skip it.
+;; The upper 32-bits are passed to "handle_response" as the `reqCtx` parameter.
+;; See `ctx_next` for more information.
+(func $handle (export "handle_request") (result (; ctx_next ;) i64)
+  (return (i64.const 1)) ;; next=1 proceeds to the next handler
 ```
 
-Note: By default, whether the next handler on the host flushes the response
-prior to returning is implementation-specific. If your handler needs to inspect
-or manipulate a response produced by `next`, set `buffer-response` via
+When `handle_request` returns zero, the guest wrote a response directly or
+accepts the default empty HTTP 200 response. That said, a default
+`handle_request` implementation should return `i64(1)` to proceed to the next
+handler on the host.
+
+### `handle_response`
+
+```webassembly
+;; handle_response is called after `handle_request` and any handlers defined on
+;; the host.
+;;
+;; The `reqCtx` parameter is a possibly zero `ctx_next` "ctx" field the host
+;; propagated from `handle_request`. This allows request correlation for guests
+;; who need it.
+;;
+;; The `isError` parameter is one if there was a host error producing a
+;; response. This allows guests to clean up any resources.
+(import "http_handler" "handle_response" (func $next))
+```
+
+By default, whether the next handler on the host flushes the response prior to
+returning is implementation-specific. If your handler needs to inspect or
+manipulate a response inside `handle_response`, set `buffer-response` via
 `enable_features`, described later.
 
 ## Memory
@@ -182,17 +234,19 @@ shouldn't be enabled by default.
 ;; flags:
 
 ;; feature_buffer_request buffers the HTTP request body when reading, so that
-;; `next` can see the original.
+;; the next handler can also read it.
 ;;
 ;; Note: Buffering a request is done on the host and can use resources such as
 ;; memory. It also may reduce the features of the underlying request due to
 ;; implications of buffering or wrapping.
 (global $feature_buffer_request  i32 (i32.const 1))
 
-;; feature_buffer_response buffers the HTTP response produced by `next` instead
-;; of sending it immediately. This allows the caller to inspect and overwrite
-;; the HTTP status code, response body or trailers. As the response is deferred,
-;; expect timing differences when enabled.
+;; feature_buffer_response buffers the HTTP response produced by the next
+;; handler defined on the host instead of sending it immediately.
+;;
+;; This allows the `handle_response` to inspect and overwrite the HTTP status
+;; code, response body or trailers. As the response is deferred, expect timing
+;; differences when enabled.
 ;;
 ;; Note: Buffering a response is done on the host and can use resources such as
 ;; memory. It also may reduce the features of the underlying response due to
@@ -214,15 +268,15 @@ shouldn't be enabled by default.
   (result  (; features ;) i32)))
 ```
 
-`enable_features` must be called prior to `next` to have any affect, but may be
-called prior to `handle` to fail fast, for example inside a start function.
-Doing so reduces overhead per-call and also allows the guest to fail early on
-unsupported.
+`enable_features` must be called prior to returning from `handle_request` to
+have any affect, but may be called prior to `handle` to fail fast, for example
+inside a start function. Doing so reduces overhead per-call and also allows the
+guest to fail early on unsupported.
 
-If called during `handle`, any new features are only enabled for the scope of
-the current request. This allows fine-grained access to expensive features such
-as buffering. For example, a guest could enable buffering only for specific
-URIs.
+If called during `handle_request`, any new features are only enabled for the
+scope of the current request. This allows fine-grained access to expensive
+features such as buffering. For example, a guest could enable buffering only
+for specific URIs.
 
 ### Handling unsupported features
 
@@ -603,12 +657,13 @@ it in WebAssembly's Text Format (`%.wat`) and Go:
 Here are some `body_kind` specific notes about `read_body`:
 
 * `feature_buffer_request` is required to invoke `read_body` without consuming
-  the request body. To enable it, call `enable_features` before `next`.
-  Otherwise, the next handler may panic attempting to read the request body
-  because it was already read.
+  the request body. To enable it, call `enable_features` before returning from
+  `handle_request`. Otherwise, the next handler may panic attempting to read
+  the request body because it was already read.
 * `feature_buffer_response` is required to read the response body produced by
-  `next`. To enable it, call `enable_features` beforehand. Otherwise, the guest
-  may read EOF because the downstream handler already consumed it.
+  the next handler defined on the host inside `handle_response`. To enable it,
+  call `enable_features` beforehand. Otherwise, the gues tmay read EOF because
+  the downstream handler already consumed it.
 
 ### `write_body`
 
@@ -628,9 +683,9 @@ Here are some `body_kind` specific notes about `read_body`:
 
 Here are some `body_kind` specific notes about `write_body`:
 
-* The first call to `write_body` in `handle` overwrites any request body.
-* The first call to `write_body` in `handle` or after `next` overwrites any
-  response body.
+* The first call to `write_body` in `handle_request` overwrites any request body.
+* The first call to `write_body` in `handle_request` or `handle_response`
+  overwrites any response body.
 
 ## Request Only Functions
 
@@ -774,7 +829,8 @@ messages. Functions in this section only apply to an HTTP response.
 ### `get_status_code`
 
 ```webassembly
-;; get_status_code returns the status code produced by `next`, e.g. 200.
+;; get_status_code returns the status code produced by the next handler defined
+;; on the host, e.g. 200.
 ;;
 ;; Note: A host who fails to get the status code will trap (aka panic,
 ;; "unreachable" instruction).
@@ -783,13 +839,14 @@ messages. Functions in this section only apply to an HTTP response.
 ```
 
 For example, if the response line was "HTTP/1.1 200 OK", 200 would be returned.
-Calling `get_status_code` before `next` may panic.
+Calling `get_status_code` before `handle_response` may panic.
 
 ### `set_status_code`
 
 ```webassembly
-;; set_status_code overwrites the status code produced by `next`, e.g. 200.
-;; To call this after `next` requires `feature_buffer_response`.
+;; set_status_code overwrites the status code produced by the next handler defined
+;; on the host, e.g. 200. To call this in `handle_response` requires
+;;`feature_buffer_response`.
 ;;
 ;; Note: A host who fails to set the status code will trap (aka panic,
 ;; "unreachable" instruction).
@@ -800,5 +857,6 @@ Calling `get_status_code` before `next` may panic.
 The default status code is 200, so guests do not have to call this if only to
 set that value.
 
-A guest who needs to overwrite the status code assigned by `next` must enable
-`features_buffer_response` beforehand, via `enable_features`.
+A guest who needs to overwrite the status code assigned by the next handler
+defined on the host must enable `features_buffer_response` beforehand, via
+`enable_features`.
