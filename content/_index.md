@@ -4,7 +4,7 @@ layout = "single"
 +++
 
 http-wasm defines HTTP functions implemented in [WebAssembly][1]. This
-repository contains Abstract Binary Interface (ABI) defining how hosts and
+repository contains Application Binary Interface (ABI) defining how hosts and
 guests communicate compatability. This site describes both the ABI currently
 specified and known implementations of them.
 
