@@ -1,4 +1,7 @@
-# Notable rationale for http_handler design
++++
+title = "Notable rationale for http-wasm"
+layout = "single"
++++
 
 ## Why is this not defined in the WebAssembly Component Model?
 

@@ -1,4 +1,7 @@
-# HTTP handler ABI
++++
+title = "HTTP handler ABI"
+layout = "single"
++++
 
 The HTTP handler ABI allows users to write portable HTTP server middleware in
 a language that compiles to wasm. For example, a Go HTTP service could embed

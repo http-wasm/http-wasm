@@ -1,0 +1,25 @@
+baseURL = "https://http-wasm.io/"
+languageCode = "en-us"
+defaultContentLanguage = "en"
+title = "http-wasm"
+theme = "hello-friend"
+
+[params]
+  defaultTheme = "light"
+  showReadingTime = false
+
+[languages]
+  [languages.en]
+    [languages.en.params.logo]
+      logoText = "http-wasm"
+    [languages.en.menu]
+      [[languages.en.menu.main]]
+        url = "/http-handler/"
+        identifier = "http-handler"
+        name = "HTTP Handler ABI"
+        weight = 10
+      [[languages.en.menu.main]]
+        url = "/rationale/"
+        identifier = "rationale"
+        name = "Design and Rationale"
+        weight = 10
