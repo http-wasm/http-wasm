@@ -16,6 +16,11 @@ theme = "hello-friend"
       [[languages.en.menu.main]]
         url = "/http-handler/"
         identifier = "http-handler"
+        name = "HTTP Handler"
+        weight = 10
+      [[languages.en.menu.main]]
+        url = "/http-handler-abi/"
+        identifier = "http-handler-abi"
         name = "HTTP Handler ABI"
         weight = 10
       [[languages.en.menu.main]]
