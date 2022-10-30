@@ -9,7 +9,7 @@ a `.wasm` extension.
 
 WebAssembly has a virtual machine architecture where the *host* is the
 embedding process and the *guest* is a program compiled into the WebAssembly
-Binary Format, also known as Wasm. The Abstract Binary Interface (ABI) is the
+Binary Format, also known as Wasm. The Application Binary Interface (ABI) is the
 contract between the *host* and the *guest*, primarily defining functions each
 side can import.
 
