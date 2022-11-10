@@ -781,7 +781,8 @@ method to "POST".
 ;;
 ;; Note: The host should return "/" instead of empty for a request with no URI.
 ;;
-;; Note: The URI may include query parameters.
+;; Note: The URI may include query parameters. Despite the path and query being
+;; set as raw, it will write the URI encoded (both path and query parameters).
 ;;
 ;; Note: A host who fails to get the URI will trap (aka panic, "unreachable"
 ;; instruction).
