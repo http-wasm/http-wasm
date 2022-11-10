@@ -9,7 +9,7 @@ A concrete ABI must be defined in a way that doesn't break signatures or
 constant value mappings (such as flags or enums). The most precise way to
 define host and guest ABI is in WebAssembly itself. For example,
 [WebAssembly Text Format][1] (`%.wat`). However, this format was not defined
-as an IDL. `%.wat` not only defines interfaces (imports and exports), but 
+as an IDL. `%.wat` not only defines interfaces (imports and exports), but
 also implementations (function definitions, etc.).
 
 It seems that [WebAssembly Component Model][2] (`%.wit.md`) is a better choice,
@@ -38,7 +38,7 @@ of them:
   functions are defined as lower_snake_case, but Component Model requires them
   as lower-hyphen case. This has knock-on problems including many languages
   don't support the hyphen character in function definitions. Concretely, this
-  leads to functions exported like "log_enabled", but defined like
+  leads to functions exported like "log-enabled", but defined like
   "log_enabled." Other inflexibility involve constants, particularly enums. If
   you run code generators, you'll notice conventionally zero is chosen for the
   first enum. However, this is not due to spec as defining it was considered
@@ -102,7 +102,6 @@ represent features flags. As we reserve zero to indicate no features, this
 allows up to 30 feature flags. Unlike WebAssembly's feature proposals which can
 easily get into dozens, we don't expect that many feature flags for the
 http-wasm host. Notably, the initial version only uses three.
-
 
 [1]: https://www.w3.org/TR/wasm-core-1/#text-format%E2%91%A0
 [2]: https://github.com/WebAssembly/component-model
