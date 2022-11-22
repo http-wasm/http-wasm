@@ -40,7 +40,7 @@ Note, this specification only uses numeric types, defined in WebAssembly Core
 Specification 1.0. For example, a string is passed as two `i32` parameters
 corresponding to its segment in linear memory.
 
-See [rationale](rationale) for context on design decisions.
+See [rationale]({{< ref "rationale.md" >}}) for context on design decisions.
 
 ## Lifecycle Functions
 

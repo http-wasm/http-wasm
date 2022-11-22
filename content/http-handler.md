@@ -13,7 +13,7 @@ Binary Format, also known as Wasm. The Application Binary Interface (ABI) is the
 contract between the *host* and the *guest*, primarily defining functions each
 side can import.
 
-Implementations of the [http-handler ABI](/http-handler-abi) allows you to
+Implementations of the [http-handler ABI]({{< ref "http-handler-abi.md" >}}) allows you to
 manipulate an incoming request or serve a response with custom logic compiled
 to a Wasm binary. In other words, you can extend features of your HTTP server
 binary with third-party code, without recompiling.

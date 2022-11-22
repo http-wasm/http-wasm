@@ -10,7 +10,7 @@ specified and known implementations of them.
 
 ## HTTP handler
 
-The [HTTP Handler](http-handler) allows users to write portable HTTP server
+The [HTTP Handler]({{< ref "http-handler.md" >}}) allows users to write portable HTTP server
 middleware in a language that compiles to wasm. For example, a Go HTTP service
 could embed routing middleware written in Zig.
 
