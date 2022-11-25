@@ -207,7 +207,7 @@ Here's an example in Go:
 func GetPath() string {
     path_len := get_path(0, 0)
     if path_len == 0 {
-  return ""
+        return ""
     }
     buf := make([]byte, path_len)
     ptr := iptr(unsafe.Pointer(&buf[0]))
