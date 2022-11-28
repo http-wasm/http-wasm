@@ -779,7 +779,7 @@ method to "POST".
 ;; get_uri writes the URI to memory if it isn't larger than `buf_limit`, e.g.
 ;; "/v1.0/hi?name=panda". The result is its length in bytes.  
 ;;
-;; Note: If no URI have been set by set_uri, get_uri will return `/`.
+;; Note: The host should return "/" instead of empty for a request with no URL.
 ;;
 ;; Note: The URI may include query parameters.
 ;;
