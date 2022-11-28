@@ -30,6 +30,7 @@ This ABI is defined in English, with examples in [WebAssembly Text Format][2]
 signatures. Let's take an example of a configuration function.
 
 Here's the host function signature in WebAssembly Text Format (wat):
+
 ```webassembly
 (import "http_handler" "get_config" (func $get_config
   (param $buf i32) (param $buf_limit i32)
@@ -85,6 +86,7 @@ wants the host to propagate request context, it shifts that into the upper
 ```
 
 Here are some examples of `ctx_next` values:
+
 * `0<<32|0`  (0): don't proceed to the next handler.
 * `0<<32|1`  (1): proceed to the next handler without context state.
 * `16<<32|1` (68719476737): proceed to the next handler and call
@@ -156,10 +158,10 @@ This parameter supports the most common case of retrieving a header value by
 name. However, there are some subtle use cases possible, particularly helpful
 for WebAssembly performance:
 
-- re-using a buffer for reading header or path values (`buf`).
-- growing a buffer only when needed (retry with larger `buf_limit`).
-- avoiding copying invalidly large header values (`buf_limit`).
-- determining if a header exists without copying it (`buf_limit=0`).
+* re-using a buffer for reading header or path values (`buf`).
+* growing a buffer only when needed (retry with larger `buf_limit`).
+* avoiding copying invalidly large header values (`buf_limit`).
+* determining if a header exists without copying it (`buf_limit=0`).
 
 In order for the guest to control memory usage, it can pass any `buf_limit` to
 a function that reads a field. If it is sufficient, the result will be written
@@ -168,6 +170,7 @@ understand that if the field is larger than the `buf_limit`, nothing is
 written. This allows the guest to learn the length, by passing `buf_limit=0`.
 
 For example, given the below function:
+
 ```webassembly
 (import "http_handler" "get_path" (func $get_path
   (param $buf i32) (param $buf_limit i32)
@@ -199,11 +202,12 @@ A guest can learn the length of the field by calling it with `buf_limit=0`. It
 can then allocate a string of the exact length and retry.
 
 Here's an example in Go:
+
 ```go
 func GetPath() string {
     path_len := get_path(0, 0)
     if path_len == 0 {
-		return ""
+        return ""
     }
     buf := make([]byte, path_len)
     ptr := iptr(unsafe.Pointer(&buf[0]))
@@ -314,9 +318,10 @@ Trailers is a feature flag because trailers are not well-supported. For
 example, fasthttp did not support trailers until early 2022.
 
 A host that doesn't support trailers must do the following:
-  - return 0 for this bit in the `enable_features` result.
-  - return no trailer names or values.
-  - panic/trap on any call to set a trailer value.
+
+* return 0 for this bit in the `enable_features` result.
+* return no trailer names or values.
+* panic/trap on any call to set a trailer value.
 
 ## Logging Functions
 
@@ -349,6 +354,7 @@ A host that doesn't support trailers must do the following:
 
 For example, if parameters are level=0, message=1, message_len=5, this function
 would log the message "error" to INFO level.
+
 ```
                message_len
            +------------------+
@@ -373,13 +379,14 @@ The HTTP Handler ABI defines common functions for HTTP headers, regardless of
 whether they are request or response, or trailing.
 
 Here are the most important details about header functions.
+
 * The header target is indicated by a `header_kind` enum. Ex `request` is 0.
 * Functions that return multiple results write NUL-terminated value sequences
   to memory and returns the count and total length in bytes (`count_len`).
 * To use trailing headers (trailers), you must enable `feature_trailers`.
 
 Note: Multiple results are NUL-terminated sequences, not NUL-delimited. e.g.
-"foo\00bar\00" not "foo\00bar". 
+"foo\00bar\00" not "foo\00bar".
 
 ### `header_kind`
 
@@ -447,6 +454,7 @@ the request with a higher limit.
 
 If parameters buf=16 and buf_limit=128, the result would be `1<<32|5` and
 "Date" would be written to memory followed by a NUL character (0).
+
 ```
             i32(1<<32|5) == 4294967296 + 5
                 +------------------+
@@ -463,6 +471,7 @@ whether to retry the request with a higher limit.
 
 If parameters buf=16 and buf_limit=128, the result would be `1<<32|8` and
 "Date" and "Etag" will be written with NUL terminators (0) like below:
+
 ```
                       i32(1<<32|8) == 4294967296 + 10
                 +-----------------------------------------+
@@ -508,6 +517,7 @@ caller would decide whether to retry the request with a higher limit.
 
 If parameters buf=16 and buf_limit=128, and there was a value "01234567", the
 result would be `1<<32|9` and the value written like so:
+
 ```
                      i32(1<<32|9) == 4294967296 + 9
                 +--------------------------------------+
@@ -537,6 +547,7 @@ caller would decide whether to retry the request with a higher limit.
 
 If parameters buf=16 and buf_limit=128, and there were two values: "a=b" and
 "c=d", the result would be `1<<32|8` and the value written like so:
+
 ```
                   i32(1<<32|8) == 4294967296 + 8
                 +-------------------------------+
@@ -614,9 +625,10 @@ The HTTP Handler ABI defines common functions for HTTP bodies, regardless of
 whether they are request or response.
 
 Here are the most important details about header functions.
+
 * Reads and writes are stateful and affect the stream.
 * `feature_buffer_request` or `feature_buffer_response` may be required,
-  depending on the logic compiled to the guest wasm. 
+  depending on the logic compiled to the guest wasm.
 
 ### `body_kind`
 
@@ -767,6 +779,8 @@ method to "POST".
 ;; get_uri writes the URI to memory if it isn't larger than `buf_limit`, e.g.
 ;; "/v1.0/hi?name=panda". The result is its length in bytes.  
 ;;
+;; Note: The host should return "/" instead of empty for a request with no URI.
+;;
 ;; Note: The URI may include query parameters.
 ;;
 ;; Note: A host who fails to get the URI will trap (aka panic, "unreachable"
@@ -803,7 +817,7 @@ below, and the `len` of the URI would be returned:
 ```
 
 For example, if parameters are uri=8, uri_len=2, this function would set the
-URI to "/a". If any query parameters existed before, they are removed. 
+URI to "/a". If any query parameters existed before, they are removed.
 
 ```
            uri_len
