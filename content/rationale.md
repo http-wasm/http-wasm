@@ -77,6 +77,15 @@ the module name and retains function names in the case format they are declared
 in. Parameters names are inconsistently mapped, preferring the case format of
 the language.
 
+## Why are the query parameters URI encoded?
+
+Query parameters can contain characters that act as values or as a separator in the syntax. A query string like `?name=chip&dale` can represent two things depending if it was encoded or not:
+
+* encoded: `name` equals `chip` and `dale` is empty.
+* raw: `name` equals `chip&dale`
+
+To remove this ambiguity we will always return the URI encoded to reflect the query parameters intent. For example, if user wants to pass `chip&dale` as `name` the URI will be `/disney?name=chip%26dale` whereas if it is the case where `name` is `chip` and an additional query parameter called `dale` as empty the URI would be `/disney?name=chip&dale`.
+
 ## Logging
 
 ### Levels
