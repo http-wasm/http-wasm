@@ -79,7 +79,7 @@ the language.
 
 ## Why are the query parameters URI encoded?
 
-Query parameters can contain characters that act as values or as a separator in the syntax. A query string like `?name=chip&dale` can represent two things depending if it was encoded or not:
+Query parameters can contain characters that act as values or as delimiters in the syntax (see <https://datatracker.ietf.org/doc/html/rfc3986#section-2.2>). A query string like `?name=chip&dale` can represent two things depending if it was encoded or not:
 
 * encoded: `name` equals `chip` and `dale` is empty.
 * raw: `name` equals `chip&dale`
