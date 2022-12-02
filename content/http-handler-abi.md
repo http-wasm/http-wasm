@@ -810,8 +810,9 @@ below, and the `len` of the URI would be returned:
 ;; set_uri overwrites the URI with one read from memory, e.g.
 ;; "/v1.0/hi?name=panda".
 ;;
-;; Note: The URI may include query parameters. The host MUST ensure URI passed
-;; is encoded.
+;; Note: The URI may include query parameters. The guest MUST pass 
+;; the URI encoded as the host will ALWAYS expect the URI as encoded
+;; and passing it unencoded could lead to unexpected behaviours.
 ;;
 ;; Note: A host who fails to set the URI will trap (aka panic, "unreachable"
 ;; instruction).

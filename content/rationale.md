@@ -84,7 +84,8 @@ Query parameters can contain characters that act as values or as delimiters in t
 * encoded: `name` equals `chip` and `dale` is empty.
 * raw: `name` equals `chip&dale`
 
-To remove this ambiguity we will always treat URIs returned from or passed to the ABI as encoded to reflect the query parameters intent. For example, if user wants to pass `chip&dale` as `name` the URI will be `/disney?name=chip%26dale` whereas if it is the case where `name` is `chip` and an additional query parameter called `dale` as empty the URI would be `/disney?name=chip&dale`.
+To remove this ambiguity we require guest to pass the URI encoded to the host as the host
+has no deterministic means to determine whether a URI is encoded or not. For example, if guest passes `chip&dale` as `name` the URI will be `/disney?name=chip%26dale` whereas if it is the case where `name` is `chip` and an additional query parameter called `dale` as empty the URI would be `/disney?name=chip&dale`. Requiring the guest to encode the URI MAY involve an overhead in the size of the binary.
 
 ## Logging
 
