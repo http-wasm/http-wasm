@@ -434,9 +434,9 @@ it in WebAssembly's Text Format (`%.wat`) and Go:
 ### `get_header_names`
 
 ```webassembly
-;; get_header_names writes all header names, NUL-terminated, to memory if the
-;; encoded length isn't larger than `buf_limit`. `count_len` is returned
-;; regardless of whether memory was written. The names must all be lowercase.
+;; get_header_names writes all header names, in lowercase, NUL-terminated, to
+;; memory if the encoded length isn't larger than `buf_limit`. `count_len` is
+;; returned regardless of whether memory was written.
 ;;
 ;; Note: A host who fails to get header names will trap (aka panic,
 ;; "unreachable" instruction).
