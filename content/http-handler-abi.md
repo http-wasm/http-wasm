@@ -782,7 +782,9 @@ method to "POST".
 ;;
 ;; Note: The host should return "/" instead of empty for a request with no URI.
 ;;
-;; Note: The URI may include query parameters.
+;; Note: The URI may include query parameters. It will always write the URI encoded
+;; to ASCII (both path and query parameters e.g. "/v1.0/hi?name=kung+fu+panda"). See
+;; https://datatracker.ietf.org/doc/html/rfc3986#section-2 for more references.
 ;;
 ;; Note: A host who fails to get the URI will trap (aka panic, "unreachable"
 ;; instruction).
@@ -809,7 +811,9 @@ below, and the `len` of the URI would be returned:
 ;; set_uri overwrites the URI with one read from memory, e.g.
 ;; "/v1.0/hi?name=panda".
 ;;
-;; Note: The URI may include query parameters.
+;; Note: The URI may include query parameters. The guest MUST pass 
+;; the URI encoded as the host will ALWAYS expect the URI as encoded
+;; and passing it unencoded could lead to unexpected behaviours.
 ;;
 ;; Note: A host who fails to set the URI will trap (aka panic, "unreachable"
 ;; instruction).

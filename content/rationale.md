@@ -77,6 +77,25 @@ the module name and retains function names in the case format they are declared
 in. Parameters names are inconsistently mapped, preferring the case format of
 the language.
 
+## Why are the query parameters URI encoded?
+
+Query parameters can contain characters that act as values or as delimiters in the syntax (see <https://datatracker.ietf.org/doc/html/rfc3986#section-2.2>). A query string like `?name=chip&dale` can represent two things depending if it was encoded or not:
+
+* encoded: `name` equals `chip` and `dale` is empty.
+* raw: `name` equals `chip&dale`
+
+To remove this ambiguity we require guest to pass the URI encoded to the host as the host
+has no reliable means to determine whether a URI is encoded or not. For example, if guest passes `chip&dale` as `name` the URI will be `/disney?name=chip%26dale` whereas if it is the case where `name` is `chip` and an additional query parameter called `dale` as empty the URI would be `/disney?name=chip&dale`. Requiring the guest to encode the URI MAY involve an overhead in the size of the binary.
+
+As a side effect, as guests control the encoding, they can do assertions on query parameters directly (e.g. `chip&dale`) rather than harcoding the encoded values `chip%26dale`.
+
+## Why doesn't the host trap on unencoded URI?
+
+We cannot reliably tell whether the URI is correctly encoded or not, the host has to trust the guest on this and hence we prefer to have false negativs (incorrect URIs which might end up on failing requests anyways) rather than false positives (encoded URIs that might look like unencoded ones).
+  - https://stackoverflow.com/questions/2295223/how-to-find-out-if-string-has-already-been-url-encoded
+  - https://stackoverflow.com/questions/17564837/how-to-know-if-a-url-is-decoded-encoded
+
+
 ## Logging
 
 ### Levels
