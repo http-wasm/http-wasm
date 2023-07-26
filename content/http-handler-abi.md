@@ -349,7 +349,7 @@ A host that doesn't support trailers must do the following:
 ;; (aka panic, "unreachable" instruction).
 (import "http_handler" "log" (func $log
   (param $level (; log_level ;) i32)
-  (param $buf i32) (param $buf_limit i32)))
+  (param $message i32) (param $message_len i32)))
 ```
 
 For example, if parameters are level=0, message=1, message_len=5, this function
@@ -625,7 +625,7 @@ value_len=3, this function add a header field "Set-Cookie: c=d".
 The HTTP Handler ABI defines common functions for HTTP bodies, regardless of
 whether they are request or response.
 
-Here are the most important details about header functions.
+Here are the most important details about body functions.
 
 * Reads and writes are stateful and affect the stream.
 * `feature_buffer_request` or `feature_buffer_response` may be required,
@@ -778,7 +778,7 @@ method to "POST".
 
 ```webassembly
 ;; get_uri writes the URI to memory if it isn't larger than `buf_limit`, e.g.
-;; "/v1.0/hi?name=panda". The result is its length in bytes.  
+;; "/v1.0/hi?name=panda". The result is its length in bytes.
 ;;
 ;; Note: The host should return "/" instead of empty for a request with no URI.
 ;;
@@ -811,7 +811,7 @@ below, and the `len` of the URI would be returned:
 ;; set_uri overwrites the URI with one read from memory, e.g.
 ;; "/v1.0/hi?name=panda".
 ;;
-;; Note: The URI may include query parameters. The guest MUST pass 
+;; Note: The URI may include query parameters. The guest MUST pass
 ;; the URI encoded as the host will ALWAYS expect the URI as encoded
 ;; and passing it unencoded could lead to unexpected behaviours.
 ;;
@@ -838,7 +838,7 @@ URI to "/a". If any query parameters existed before, they are removed.
 ;; writes the protocol version to memory if it isn't larger than `buf_limit`.
 ;; The result is its length in bytes.
 ;;
-;; The most common protocol versions are "HTTP/1.1" and "HTTP/2.0". 
+;; The most common protocol versions are "HTTP/1.1" and "HTTP/2.0".
 ;;
 ;; Note: A host who fails to get the protocol version will trap (aka panic,
 ;; "unreachable" instruction).
