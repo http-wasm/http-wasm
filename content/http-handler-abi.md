@@ -616,8 +616,7 @@ value_len=3, this function add a header field "Set-Cookie: c=d".
 ;; "unreachable" instruction).
 (import "http_handler" "remove_header" (func $set_header_value
   (param  $kind i32)
-  (param  $name i32) (param $name_len i32)
-  (param $value i32) (param $value_len i32)))
+  (param  $name i32) (param $name_len i32)))
 ```
 
 ## Body Functions
@@ -778,7 +777,7 @@ method to "POST".
 
 ```webassembly
 ;; get_uri writes the URI to memory if it isn't larger than `buf_limit`, e.g.
-;; "/v1.0/hi?name=panda". The result is its length in bytes.  
+;; "/v1.0/hi?name=panda". The result is its length in bytes.
 ;;
 ;; Note: The host should return "/" instead of empty for a request with no URI.
 ;;
@@ -811,7 +810,7 @@ below, and the `len` of the URI would be returned:
 ;; set_uri overwrites the URI with one read from memory, e.g.
 ;; "/v1.0/hi?name=panda".
 ;;
-;; Note: The URI may include query parameters. The guest MUST pass 
+;; Note: The URI may include query parameters. The guest MUST pass
 ;; the URI encoded as the host will ALWAYS expect the URI as encoded
 ;; and passing it unencoded could lead to unexpected behaviours.
 ;;
@@ -838,7 +837,7 @@ URI to "/a". If any query parameters existed before, they are removed.
 ;; writes the protocol version to memory if it isn't larger than `buf_limit`.
 ;; The result is its length in bytes.
 ;;
-;; The most common protocol versions are "HTTP/1.1" and "HTTP/2.0". 
+;; The most common protocol versions are "HTTP/1.1" and "HTTP/2.0".
 ;;
 ;; Note: A host who fails to get the protocol version will trap (aka panic,
 ;; "unreachable" instruction).
