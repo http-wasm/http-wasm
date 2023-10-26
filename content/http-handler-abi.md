@@ -859,6 +859,31 @@ below, and the `len` would be eight.
           buf --^
 ```
 
+### `get_remote_addr`
+
+```webassembly
+;; get_remote_addr writes the client remote addr to memory if it isn't larger than `buf_limit`,
+;; e.g. "1.1.1.1:12345". The result is its length in bytes. It supports both IPv4 and IPv6.
+;;
+;; Note: A host who fails to get the remote address will trap (aka panic, "unreachable"
+;; instruction).
+(import "http_handler" "get_remote_addr" (func $get_remote_addr
+  (param $buf i32) (param $buf_limit i32)
+  (result (; len ;) i32)))
+```
+
+For example, if parameters buf=16 and buf_limit=128, and the request address
+`1.2.3.4:12345` would be written to memory like below,
+and the `len` would be 13.
+
+```
+                    len
+                +---------+
+                |         |
+[]byte{ 0..15, '1', '.', '2', '.', '3', .. }
+          buf --^
+```
+
 ## Response Only Functions
 
 Functions such as `get_header_names` apply to both request and response
