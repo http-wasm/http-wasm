@@ -859,20 +859,20 @@ below, and the `len` would be eight.
           buf --^
 ```
 
-### `get_remote_addr`
+### `get_source_addr`
 
 ```webassembly
-;; get_remote_addr writes the client remote addr to memory if it isn't larger than `buf_limit`,
-;; e.g. "1.1.1.1:12345". The result is its length in bytes. It supports both IPv4 and IPv6.
+;; get_source_addr writes the client source addr as a string to memory if it isn't larger than `buf_limit`,
+;; e.g. "1.1.1.1:12345" or "[fe80::101e:2bdf:8bfb:b97e]:12345". The result is its length in bytes. It supports both IPv4 and IPv6.
 ;;
 ;; Note: A host who fails to get the remote address will trap (aka panic, "unreachable"
 ;; instruction).
-(import "http_handler" "get_remote_addr" (func $get_remote_addr
+(import "http_handler" "get_source_addr" (func $get_source_addr
   (param $buf i32) (param $buf_limit i32)
   (result (; len ;) i32)))
 ```
 
-For example, if parameters buf=16 and buf_limit=128, and the request address
+For example, if parameters buf=16 and buf_limit=128, and the source address
 `1.2.3.4:12345` would be written to memory like below,
 and the `len` would be 13.
 
