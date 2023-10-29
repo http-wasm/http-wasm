@@ -616,8 +616,7 @@ value_len=3, this function add a header field "Set-Cookie: c=d".
 ;; "unreachable" instruction).
 (import "http_handler" "remove_header" (func $set_header_value
   (param  $kind i32)
-  (param  $name i32) (param $name_len i32)
-  (param $value i32) (param $value_len i32)))
+  (param  $name i32) (param $name_len i32)))
 ```
 
 ## Body Functions
